@@ -38,10 +38,17 @@ st.set_page_config(
 st.html(
     """
     <style>
+      /* The three example shortcuts are demo aids, not actions the user has to
+         take, so they are allowed to be smaller than a real button: they only
+         have to fit three-across on a 390px phone and stay tappable. */
       .st-key-example_0 button,
       .st-key-example_1 button,
       .st-key-example_2 button {
-          min-height: 56px;
+          min-height: 52px;
+          height: 52px;
+          font-size: 0.9rem;
+          padding: 0 0.85rem;
+          white-space: nowrap;
       }
       [class*="st-key-reply_"] button {
           min-height: 64px;
@@ -240,7 +247,11 @@ if st.session_state["phase"] == "start":
 # half-finished upload can never remove the sentence that keeps this honest.
 # ---------------------------------------------------------------------------
 st.caption(rt.FOOTER)
-st.caption("🔧 Demo version — the answers are placeholders.")
+st.caption("🔧 Demo — placeholder answers.")
+
+# Room for the pinned chat box. Without this, the last line of text sits under
+# the input on a phone and gets clipped mid-sentence.
+st.space(180)
 
 # ---------------------------------------------------------------------------
 # The input. One box, used for both a pasted message and a question.
