@@ -51,13 +51,16 @@ SIGNALS = [
         "weight": 25,
         "words": ["urgent", "immediately", "within 24 hours", "final notice",
                   "last warning", "act now", "expires today", "only today",
-                  "asap", "suspended", "blocked"],
+                  "asap", "suspended", "blocked", "hacked", "hack",
+                  "within 1 hour", "emergency"],
     },
     {
         "pattern": "money request",
         "weight": 30,
-        "words": ["transfer", "send money", "pay now", "payment of", "wire",
-                  "remit", "deposit", "$", "hkd", "refund fee", "redelivery fee"],
+        "words": ["transfer", "send money", "give me money", "send me money",
+                  "pay now", "payment of", "wire", "remit", "deposit", "$",
+                  "hkd", "refund fee", "redelivery fee", "money", "cash",
+                  "gift card", "itunes card"],
     },
     {
         "pattern": "bank impersonation",
@@ -67,13 +70,13 @@ SIGNALS = [
     },
     {
         "pattern": "government impersonation",
-        "weight": 30,
+        "weight": 40,
         "words": ["police", "customs", "immigration", "inland revenue",
                   "government", "court", "arrest", "warrant", "ird"],
     },
     {
         "pattern": "prize",
-        "weight": 25,
+        "weight": 30,
         "words": ["you have won", "congratulations", "lucky draw", "prize",
                   "lottery", "jackpot", "winner", "claim your"],
     },
@@ -134,8 +137,8 @@ SIGNALS = [
     },
 ]
 
-HIGH_AT = 70   # score at or above this is "high"
-MEDIUM_AT = 35  # score at or above this is "medium"
+HIGH_AT = 65   # score at or above this is "high"
+MEDIUM_AT = 25  # score at or above this is "medium"
 
 
 def _score_with_fake_rules(message):
