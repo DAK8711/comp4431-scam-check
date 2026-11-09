@@ -1,0 +1,6 @@
+# Packages the app needs. Streamlit Community Cloud installs these automatically.
+# Note: the read-aloud voice uses Windows speech, so it works on a Windows
+# laptop but NOT on a free cloud server (which runs Linux). There the app shows
+# its honest "this computer cannot read things aloud" line instead.
+streamlit>=1.50
+requests>=2.31
