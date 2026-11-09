@@ -22,26 +22,25 @@ There is exactly ONE place to change the wording of the app: this file.
 # When Henry gives you his final category list, just add a line here.
 
 PATTERN_PLAIN = {
-    "urgency": "It says you must act fast, or something bad will happen.",
-    "money request": "It asks you to send money.",
-    "bank impersonation": "It pretends to be your bank.",
-    "government impersonation": "It pretends to be from the government, police or customs.",
-    "prize": "It says you have won a prize or a lottery.",
-    "parcel": "It talks about a parcel or a delivery problem.",
-    "job offer": "It offers you a job you did not apply for.",
-    "investment": "It promises you quick or guaranteed money.",
-    "romance": "It is from someone you have never met in person.",
-    "tech support": "It says your phone or computer has a problem.",
-    "account problem": "It says your account will be closed or blocked.",
-    "password request": "It asks for a password, a code, or a PIN.",
-    "crypto": "It asks you to pay or invest using cryptocurrency.",
-    "link": "It contains a link you did not expect.",
+    "urgency": "it asks you to act fast",
+    "money request": "it asks for money",
+    "bank impersonation": "it pretends to be your bank",
+    "government impersonation": "it pretends to be the police or government",
+    "prize": "it says you have won something",
+    "parcel": "it mentions a parcel",
+    "job offer": "it offers a job you did not apply for",
+    "investment": "it promises quick money",
+    "romance": "it is from a stranger",
+    "tech support": "it says your phone has a problem",
+    "account problem": "it says your account will be blocked",
+    "password request": "it asks for a password or code",
+    "crypto": "it asks for cryptocurrency",
+    "link": "it has a link",
 }
 
 # If the backend sends a pattern we have not translated yet, we fall back to
-# this neutral sentence instead of showing a raw snake_case word to an elderly
-# user.
-FALLBACK_REASON = "It contains wording that scammers often use."
+# this neutral phrase instead of showing a raw snake_case word to an elderly user.
+FALLBACK_REASON = "it uses wording scammers often use"
 
 # ---------------------------------------------------------------------------
 # 2. The three response templates
@@ -155,29 +154,58 @@ PRIVACY_NOTICE = (
 
 FOOTER = "A guide, not a guarantee. If in doubt, call 18222."
 
-DEMO_NOTE = "🔧 Demo version — the answers are placeholders."
+
+# The order the reasons are shown in. The most serious sign comes first, so the
+# one line starts with "it pretends to be your bank" rather than "it has a link".
+PRIORITY = [
+    "bank impersonation",
+    "government impersonation",
+    "password request",
+    "money request",
+    "urgency",
+    "prize",
+    "investment",
+    "tech support",
+    "account problem",
+    "parcel",
+    "job offer",
+    "romance",
+    "crypto",
+    "link",
+]
+
+
+def _rank(pattern):
+    key = str(pattern).strip().lower()
+    return PRIORITY.index(key) if key in PRIORITY else len(PRIORITY)
 
 
 def plain_reasons(matched_patterns, limit=3):
-    """Turn backend pattern names into short plain-English reasons.
+    """Turn backend pattern names into short phrases, for one "Why:" line.
+
+    This used to return full sentences, one per bullet, taking three lines of
+    the screen. A person who thinks they have been scammed needs to know what to
+    DO, not to read a diagnosis. So the reasons are now three-word phrases that
+    fit on one line under the steps: "Why: it pretends to be your bank, it asks
+    for money, it asks you to act fast."
 
     matched_patterns : list of strings from the API, e.g. ["urgency", "prize"]
-    limit            : we show at most 3 bullets, because X1 says no long lists.
+    limit            : at most 3 phrases, so the line stays one line.
 
-    Returns a list of sentences, de-duplicated, never empty.
+    Returns a list of phrases, de-duplicated, never empty.
     """
-    sentences = []
-    for pattern in matched_patterns or []:
+    phrases = []
+    for pattern in sorted(matched_patterns or [], key=_rank):
         key = str(pattern).strip().lower()
-        sentence = PATTERN_PLAIN.get(key, FALLBACK_REASON)
-        if sentence not in sentences:
-            sentences.append(sentence)
-        if len(sentences) >= limit:
+        phrase = PATTERN_PLAIN.get(key, FALLBACK_REASON)
+        if phrase not in phrases:
+            phrases.append(phrase)
+        if len(phrases) >= limit:
             break
 
-    if not sentences:
-        sentences.append(FALLBACK_REASON)
-    return sentences
+    if not phrases:
+        phrases.append(FALLBACK_REASON)
+    return phrases
 
 
 def template_for(risk_level):

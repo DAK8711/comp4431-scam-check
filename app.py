@@ -84,9 +84,9 @@ def draw_verdict(result, with_audio):
     )
     alert(template["body"], title=f"{template['icon']} {template['headline']}")
 
-    reasons = rt.plain_reasons(result.get("matched_patterns"))
-    st.markdown("\n".join(f"- {reason}" for reason in reasons))
-
+    # Action before explanation. Someone who thinks they have been scammed
+    # needs to know what to do in the next five minutes; why it was a scam is
+    # interesting, useful for trusting the verdict, and entirely secondary.
     steps = "\n".join(
         f"**{number}.** {step}"
         for number, step in enumerate(template["steps"], start=1)
@@ -100,6 +100,18 @@ def draw_verdict(result, with_audio):
         width="stretch",
     )
     st.caption("Or call the number on the back of your bank card.")
+
+    # One line, not three bullets. Requirement F3 still holds: the user can see
+    # which signs fired, but it no longer costs them three lines of reading
+    # before they reach the phone number. Only the first phrase keeps its "it",
+    # so the line reads as one sentence rather than three.
+    patterns = result.get("matched_patterns") or []
+    if patterns:
+        reasons = rt.plain_reasons(patterns)
+        tail = [reason.removeprefix("it ") for reason in reasons[1:]]
+        st.markdown(f"**Why:** {', '.join([reasons[0], *tail])}.")
+    else:
+        st.markdown("**Why:** none of the usual scam signs are here.")
 
     # Read-aloud, only on the newest verdict so old cards stay quiet in history.
     if with_audio:
