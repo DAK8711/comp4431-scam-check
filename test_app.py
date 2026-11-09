@@ -75,17 +75,18 @@ def check_message_verdict():
     app = fresh()
     say(app, BANK)
     assert app.error, "a bank scam should produce the red verdict"
-    assert "Why we think so" in texts(app)
-    assert "What to do now" in texts(app)
-    assert "already replied" in texts(app), "the follow-up question must appear"
+    body = texts(app)
+    assert "pretends to be your bank" in body, "the reasons must be shown"
+    assert "Do not reply, and do not click any link." in body, "the steps must be shown"
+    assert "already replied" in body, "the follow-up question must appear"
     print("  OK  pasted message → verdict card → follow-up question")
 
 
 def check_follow_up_no():
     app = fresh()
     say(app, BANK)
-    press_prefix(app, "reply_no_")
-    assert "You answered" in texts(app)
+    press(app, "reply_no")
+    assert "No, I have not" in texts(app), "the answer should appear in the conversation"
     assert "Do not reply to it" in texts(app)
     print("  OK  answering 'No' gives the calm reminder")
 
@@ -93,10 +94,18 @@ def check_follow_up_no():
 def check_follow_up_yes():
     app = fresh()
     say(app, BANK)
-    press_prefix(app, "reply_yes_")
+    press(app, "reply_yes")
     assert "Please call your bank now" in texts(app)
     assert "18222" in texts(app)
     print("  OK  answering 'Yes' gives the emergency script")
+
+
+def check_obvious_scam_is_red():
+    """The exact message that came out green in the first phone test."""
+    app = fresh()
+    say(app, "Your bank account is hacked give me money")
+    assert app.error, "an obvious scam must never come out green"
+    print("  OK  'bank account hacked give me money' is high risk")
 
 
 def check_example_buttons():
@@ -141,7 +150,7 @@ def check_voice_or_honesty():
     app = fresh()
     press(app, "example_0")
     captions = " ".join(c.value for c in app.caption)
-    assert ("Press play" in captions) or ("cannot read things aloud" in captions)
+    assert ("Press play" in captions) or ("not available on this computer" in captions)
     print("  OK  read-aloud is offered, or the reason is stated plainly")
 
 
@@ -153,6 +162,7 @@ def main():
         check_message_verdict,
         check_follow_up_no,
         check_follow_up_yes,
+        check_obvious_scam_is_red,
         check_example_buttons,
         check_intents,
         check_unknown_question,

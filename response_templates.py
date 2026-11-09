@@ -56,10 +56,9 @@ TEMPLATES = {
     "high": {
         "icon": "🛑",
         "headline": "This looks like a scam.",
-        "body": (
-            "Please do not reply, and do not click anything in it. "
-            "Messages like this fool many careful people — you did the right thing by checking."
-        ),
+        # One sentence. The reassurance moved into the steps, because on a phone
+        # every extra line in the banner pushes the buttons off the screen.
+        "body": "Do not reply, and do not click anything in it. You did the right thing by checking.",
         "steps": [
             "Do not reply, and do not click any link.",
             "Do not send money, a password, or any code.",
@@ -69,27 +68,21 @@ TEMPLATES = {
     "medium": {
         "icon": "⚠️",
         "headline": "This message looks suspicious.",
-        "body": (
-            "Some of the wording is used by scammers. It might still be real, "
-            "but please check before you do anything."
-        ),
+        "body": "Some of the wording is used by scammers. It might still be real.",
         "steps": [
             "Do not send money or personal details yet.",
-            "Do not use the link in the message — open the official app or website instead.",
-            "Ask someone you trust, or call your bank using the number on your card.",
+            "Do not use the link in the message.",
+            "Ask someone you trust, or call your bank.",
         ],
     },
     "low": {
         "icon": "✅",
         "headline": "Nothing obviously dangerous here.",
-        "body": (
-            "We did not find the usual signs of a scam. That is not a promise that it is safe — "
-            "no one can promise that."
-        ),
+        "body": "We did not find the usual signs of a scam. That is not a promise that it is safe.",
         "steps": [
-            "Still be careful with messages from people you do not know.",
-            "Never share your password, your PIN, or a code sent to your phone.",
-            "If you feel unsure, ask a family member or friend first.",
+            "Still be careful with messages from strangers.",
+            "Never share your password, your PIN, or a code.",
+            "If you feel unsure, ask a family member first.",
         ],
     },
 }
@@ -157,14 +150,12 @@ CONTACTS = [
 
 PRIVACY_NOTICE = (
     "**Your message is not saved.** "
-    "We do not keep it, we do not share it, and we never ask for your name, "
-    "password or bank details."
+    "We never ask for your name, password or bank details."
 )
 
-FOOTER = (
-    "This is a guide to help you decide, not a guarantee. "
-    "When in doubt, call your bank or the Anti-Scam Helpline on 18222."
-)
+FOOTER = "A guide, not a guarantee. If in doubt, call 18222."
+
+DEMO_NOTE = "🔧 Demo version — the answers are placeholders."
 
 
 def plain_reasons(matched_patterns, limit=3):

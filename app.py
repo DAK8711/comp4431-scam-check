@@ -61,9 +61,8 @@ if "chat" not in st.session_state:
             "who": "assistant",
             "kind": "text",
             "text": (
-                "Hello. Are you worried about a message you received?\n\n"
-                "Paste it below and I will look at it. "
-                "You can also press one of the examples."
+                "Hello. Paste the message you are worried about, "
+                "or press an example."
             ),
         }
     ]
@@ -76,7 +75,12 @@ def add(who, kind, **fields):
 
 
 def draw_verdict(result, with_audio):
-    """The verdict card. Same card as before, now inside a chat bubble."""
+    """The verdict card, kept as short as it can be.
+
+    On a phone every heading costs a third of a screen, so there are no
+    subheadings here: the banner, the reasons, the steps and one call button.
+    That is roughly 700px instead of the 1,300px the first version took.
+    """
     level = str(result.get("risk_level", "medium")).lower()
     template = rt.template_for(level)
 
@@ -85,29 +89,22 @@ def draw_verdict(result, with_audio):
     )
     alert(template["body"], title=f"{template['icon']} {template['headline']}")
 
-    with st.container(border=True):
-        st.subheader("Why we think so")
-        for reason in rt.plain_reasons(result.get("matched_patterns")):
-            st.markdown(f"- {reason}")
+    reasons = rt.plain_reasons(result.get("matched_patterns"))
+    st.markdown("\n".join(f"- {reason}" for reason in reasons))
 
-    st.subheader("What to do now")
-    for number, step in enumerate(template["steps"], start=1):
-        st.markdown(f"**{number}.** {step}")
+    steps = "\n".join(
+        f"**{number}.** {step}"
+        for number, step in enumerate(template["steps"], start=1)
+    )
+    st.markdown(steps)
 
-    st.subheader("Who to call")
-    for contact in rt.CONTACTS:
-        if contact["kind"] == "call":
-            st.link_button(
-                f"{contact['label']} — {contact['number']}",
-                f"tel:{contact['number']}",
-                icon=":material/call:",
-                width="stretch",
-            )
-            st.caption(contact["hint"])
-        else:
-            with st.container(border=True):
-                st.markdown(f"**{contact['label']}**")
-                st.markdown(contact["hint"])
+    st.link_button(
+        "Call 18222 — Anti-Scam Helpline",
+        "tel:18222",
+        icon=":material/call:",
+        width="stretch",
+    )
+    st.caption("Or call the number on the back of your bank card.")
 
     # Read-aloud, only on the newest verdict so old cards stay quiet in history.
     if with_audio:
@@ -119,12 +116,9 @@ def draw_verdict(result, with_audio):
                 autoplay=True,
                 alt="A spoken version of this warning",
             )
-            st.caption("It starts on its own. Press play to hear it again.")
+            st.caption("Press play to hear it again.")
         else:
-            st.caption(
-                "This computer cannot read things aloud. "
-                "The warning is written above, and you can also call 18222."
-            )
+            st.caption("Read-aloud is not available on this computer.")
 
 
 def looks_like_question(text):
@@ -167,21 +161,12 @@ def check_message(text):
         return
 
     add("assistant", "verdict", result=result)
-    add(
-        "assistant",
-        "ask_after",
-        text="Have you already replied to it, or sent any money?",
-    )
     st.session_state["phase"] = "after"
 
 
-def resolve_answer(entry, replied):
-    """The user pressed Yes or No. Replace the question with their answer."""
-    entry["kind"] = "answered"
-    entry["text"] = (
-        "Have you already replied to it, or sent any money?\n\n"
-        f"**You answered:** {'Yes, I did' if replied else 'No, I have not'}"
-    )
+def resolve(replied):
+    """The user pressed Yes or No. Put their answer into the conversation."""
+    add("user", "text", text="Yes, I did" if replied else "No, I have not")
     add(
         "assistant",
         "text",
@@ -190,40 +175,52 @@ def resolve_answer(entry, replied):
     st.session_state["phase"] = "done"
 
 
+# The question that changes the advice. It sits just above the chat box, not
+# inside the transcript, because on a phone a button inside the transcript can
+# slide underneath the pinned input box and become impossible to tap.
+
+
 # ---------------------------------------------------------------------------
-# Header — identical at every step, so the user never feels lost.
+# Header. The big title only appears on the opening screen: once the
+# conversation has started it is 300px of scrolling on a phone and tells the
+# user something they already know.
 # ---------------------------------------------------------------------------
-st.title("Is this message a scam?")
+if st.session_state["phase"] == "start":
+    st.title("Is this message a scam?")
+
 st.markdown(rt.PRIVACY_NOTICE)
-st.divider()
 
 # ---------------------------------------------------------------------------
 # The conversation itself.
 # ---------------------------------------------------------------------------
 entries = st.session_state["chat"]
 verdict_positions = [i for i, e in enumerate(entries) if e["kind"] == "verdict"]
-ask_positions = [i for i, e in enumerate(entries) if e["kind"] == "ask_after"]
 newest_verdict = verdict_positions[-1] if verdict_positions else -1
-newest_ask = ask_positions[-1] if ask_positions else -1
 
 for index, entry in enumerate(entries):
     avatar = "🛡️" if entry["who"] == "assistant" else "🙂"
     with st.chat_message(entry["who"], avatar=avatar):
         if entry["kind"] == "verdict":
-            draw_verdict(entry["result"], with_audio=index == newest_verdict)
-        elif entry["kind"] == "ask_after":
-            st.markdown(entry["text"])
-            # Only the newest unanswered question gets live buttons.
-            if index == newest_ask and st.session_state["phase"] == "after":
-                yes, no = st.columns(2)
-                if no.button("No, I have not", key=f"reply_no_{index}", width="stretch"):
-                    resolve_answer(entry, replied=False)
-                    st.rerun()
-                if yes.button("Yes, I did", key=f"reply_yes_{index}", width="stretch"):
-                    resolve_answer(entry, replied=True)
-                    st.rerun()
+            if index == newest_verdict:
+                draw_verdict(entry["result"], with_audio=True)
+            else:
+                # An older check is folded down to one line. Keeping three full
+                # cards in the transcript is what made the page scroll forever.
+                old = rt.template_for(entry["result"].get("risk_level"))
+                st.markdown(f"{old['icon']} **{old['headline']}** _(checked earlier)_")
         else:
             st.markdown(entry["text"])
+
+# The follow-up question, kept outside the transcript so it is always tappable.
+if st.session_state["phase"] == "after":
+    st.markdown("**Have you already replied to it, or sent any money?**")
+    no_column, yes_column = st.columns(2)
+    if no_column.button("No, I have not", key="reply_no", width="stretch"):
+        resolve(replied=False)
+        st.rerun()
+    if yes_column.button("Yes, I did", key="reply_yes", width="stretch"):
+        resolve(replied=True)
+        st.rerun()
 
 # Example buttons, only before the first check.
 if st.session_state["phase"] == "start":
@@ -237,18 +234,15 @@ if st.session_state["phase"] == "start":
                 st.rerun()
 
 # ---------------------------------------------------------------------------
-# Footer — the honest limit of the tool (requirement T3).
+# Footer — two short lines instead of a paragraph (requirement T3).
 # ---------------------------------------------------------------------------
 st.caption(rt.FOOTER)
-st.caption(
-    "🔧 Demo version: the answers on this screen are placeholders until the "
-    "team's analysis service is connected."
-)
+st.caption(rt.DEMO_NOTE)
 
 # ---------------------------------------------------------------------------
 # The input. One box, used for both a pasted message and a question.
 # ---------------------------------------------------------------------------
-typed = st.chat_input("Paste the message here, or ask a question")
+typed = st.chat_input("Paste the message here")
 if typed:
     typed = typed.strip()
     if typed:
