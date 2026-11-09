@@ -21,7 +21,7 @@ buttonRadius = "16px"
 showWidgetBorder = true
 
 paddingTop = "1.5rem"
-paddingBottom = "3rem"
+paddingBottom = "8rem"
 
 headingFontSizes = ["42px", "34px", "28px", "24px", "22px", "20px"]
 
