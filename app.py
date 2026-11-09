@@ -38,18 +38,6 @@ st.set_page_config(
 st.html(
     """
     <style>
-      /* The three example shortcuts are demo aids, not actions the user has to
-         take, so they are allowed to be smaller than a real button: they only
-         have to fit three-across on a 390px phone and stay tappable. */
-      .st-key-example_0 button,
-      .st-key-example_1 button,
-      .st-key-example_2 button {
-          min-height: 52px;
-          height: 52px;
-          font-size: 0.9rem;
-          padding: 0 0.85rem;
-          white-space: nowrap;
-      }
       [class*="st-key-reply_"] button {
           min-height: 64px;
           font-weight: 600;
@@ -229,17 +217,26 @@ if st.session_state["phase"] == "after":
         resolve(replied=True)
         st.rerun()
 
-# Example buttons, only before the first check. A horizontal container keeps them
-# on one row at their natural width, instead of three full-width bars that cost
-# 600px of scrolling for something that is only a demo shortcut.
+# Example shortcuts, only before the first check.
+# These are pills rather than buttons on purpose: a pills widget is one compact
+# row by design, so there is no custom CSS involved and nothing to break on a
+# small screen.
 if st.session_state["phase"] == "start":
     st.caption("No message to hand? Try one:")
-    with st.container(horizontal=True, gap="small", vertical_alignment="center"):
-        for index, (label, text) in enumerate(EXAMPLES):
-            if st.button(label, key=f"example_{index}"):
-                add("user", "text", text=text)
-                check_message(text)
-                st.rerun()
+    choice = st.pills(
+        "Try an example",
+        [label for label, _ in EXAMPLES],
+        selection_mode="single",
+        key="example_pick",
+        label_visibility="collapsed",
+        width="content",
+    )
+    if choice and choice != st.session_state.get("example_done"):
+        st.session_state["example_done"] = choice
+        example_text = next(text for label, text in EXAMPLES if label == choice)
+        add("user", "text", text=example_text)
+        check_message(example_text)
+        st.rerun()
 
 # ---------------------------------------------------------------------------
 # Footer — two short lines instead of a paragraph (requirement T3).
