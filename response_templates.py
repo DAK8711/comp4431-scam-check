@@ -99,6 +99,30 @@ TEMPLATES = {
 DEFAULT_LEVEL = "medium"
 
 # ---------------------------------------------------------------------------
+# 2b. The two replies to "have you already replied, or sent any money?"
+# ---------------------------------------------------------------------------
+# This second question matters more than the verdict itself. Someone who has
+# already sent money needs different instructions from someone who is still
+# deciding, and telling them both the same thing wastes the most valuable
+# minutes of the whole incident.
+
+AFTER_NOT_REPLIED = (
+    "Good. Do not reply to it, and do not use any link or phone number inside it.\n\n"
+    "If you want to be certain, call your bank on the number printed on the back "
+    "of your card."
+)
+
+AFTER_REPLIED = (
+    "**Please call your bank now.** Ask them to stop any payment, and tell them "
+    "what you sent.\n\n"
+    "1. Call the number on the back of your card.\n"
+    "2. Keep the message. Do not delete it.\n"
+    "3. Call 18222 to report it.\n\n"
+    "This happens to many careful people. You did the right thing by checking."
+)
+
+
+# ---------------------------------------------------------------------------
 # 3. Where to call
 # ---------------------------------------------------------------------------
 # Replace these with the real numbers your group decides to show.
