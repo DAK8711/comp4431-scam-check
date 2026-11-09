@@ -222,22 +222,25 @@ if st.session_state["phase"] == "after":
         resolve(replied=True)
         st.rerun()
 
-# Example buttons, only before the first check.
+# Example buttons, only before the first check. A horizontal container keeps them
+# on one row at their natural width, instead of three full-width bars that cost
+# 600px of scrolling for something that is only a demo shortcut.
 if st.session_state["phase"] == "start":
-    st.caption("No message to hand? Try one of these.")
-    example_columns = st.columns(3)
-    for index, (label, text) in enumerate(EXAMPLES):
-        with example_columns[index]:
-            if st.button(label, width="stretch", key=f"example_{index}"):
+    st.caption("No message to hand? Try one:")
+    with st.container(horizontal=True, gap="small", vertical_alignment="center"):
+        for index, (label, text) in enumerate(EXAMPLES):
+            if st.button(label, key=f"example_{index}"):
                 add("user", "text", text=text)
                 check_message(text)
                 st.rerun()
 
 # ---------------------------------------------------------------------------
 # Footer — two short lines instead of a paragraph (requirement T3).
+# The demo label lives here rather than in response_templates.py so that a
+# half-finished upload can never remove the sentence that keeps this honest.
 # ---------------------------------------------------------------------------
 st.caption(rt.FOOTER)
-st.caption(rt.DEMO_NOTE)
+st.caption("🔧 Demo version — the answers are placeholders.")
 
 # ---------------------------------------------------------------------------
 # The input. One box, used for both a pasted message and a question.

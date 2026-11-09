@@ -207,18 +207,18 @@ def analyze(message):
 # ---------------------------------------------------------------------------
 EXAMPLES = [
     (
-        "A bank text",
+        "Bank text",
         "HSBC ALERT: A payment of $2,300 to an unknown account was detected. "
         "Your account will be SUSPENDED unless you confirm your identity now: "
         "http://hsbc-verify-secure.top/login",
     ),
     (
-        "A parcel text",
+        "Parcel text",
         "Your parcel could not be delivered. Please pay the redelivery fee here: "
         "http://hk-post-fee.info/pay",
     ),
     (
-        "A message from family",
+        "From family",
         "Hi Mum, I'll pick up the shopping on my way home. Do you need anything "
         "from the shop? See you at 6.",
     ),
